@@ -1,5 +1,5 @@
 SPECDIR := ./rpm
-DOCKERNAME := fedora-17-rpm-builder
+DOCKERNAME := fedora-21-rpm-builder
 
 all: docker-build docker-run
 

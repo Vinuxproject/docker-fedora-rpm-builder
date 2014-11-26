@@ -1,4 +1,4 @@
-FROM tylerwhall/fedora17
+FROM fedora:21
 
 MAINTAINER rbruns
 
