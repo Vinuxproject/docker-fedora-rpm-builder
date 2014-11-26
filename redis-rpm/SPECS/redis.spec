@@ -6,7 +6,7 @@
 
 Name:		redis
 Version:	%{_pkg_version}
-Release:	%{_pkg_release}
+Release:	%{_pkg_release}%{?dist}
 Summary:	A persistent key-value database (IXL custom)
 
 License:	BSD
@@ -15,8 +15,7 @@ URL:		http://redis.io
 # git repo and a config file
 Source0:	%{name}.conf
 Source1:	%{name}.service
-Source2:	%{name}.tmpfiles
-Source3:	%{name}.init
+Source2:	%{name}.init
 
 ExclusiveArch:	x86_64
 #Requires:	java-1.7.0-openjdk
@@ -66,6 +65,7 @@ You can use Redis from most programming languages also.
 test -d redis && ( cd redis; git pull ) || git clone https://github.com/antirez/redis.git redis
 cp %SOURCE0 .
 cp %SOURCE1 .
+cp %SOURCE2 .
 
 %build
 make -C redis
@@ -76,12 +76,18 @@ make -C redis install INTSALL="install -p" PREFIX=%{buildroot}%{_prefix}
 install -d %{buildroot}%{_sharedstatedir}/%{name}
 install -d %{buildroot}%{_localstatedir}/log/%{name}
 
-%if 0%{?with_systemd}
 install -pDm644 %{name}.conf %{buildroot}%{_sysconfdir}/%{name}.conf
+
+%if 0%{?with_systemd}
 install -pDm644 %{name}.service %{buildroot}%{_unitdir}/%{name}.service
-install -pDm644 %{name}.tmpfiles %{buildroot}%{_tmpfilesdir}/%{name}.conf
 %else
+install -d %{buildroot}%{_localstatedir}/run/%{name}
 install -pDm755 %{name}.init %{buildroot}%{_initrddir}/%{name}
+
+tee -a %{buildroot}%{_sysconfdir}/%{name}.conf << EOF
+daemonize yes
+pidfile %{_localstatedir}/run/%{name}/%{name}.pid
+EOF
 %endif
 
 %pre
@@ -104,8 +110,9 @@ chkconfig --add %{name}
 %systemd_preun %{name}.service
 %else
 if [ $1 -eq 0 ] ; then
-service %{name} stop &> /dev/null
-chkconfig --del %{name} &> /dev/null
+    service %{name} stop &> /dev/null
+    chkconfig --del %{name} &> /dev/null
+fi
 %endif
 
 %postun
@@ -118,18 +125,22 @@ fi
 %endif
 
 %files
-%attr(0644, redis, root) %config(noreplace) %{_sysconfdir}/%{name}.conf
+
 %dir %attr(0755, redis, redis) %{_sharedstatedir}/%{name}
 %dir %attr(0755, redis, redis) %{_localstatedir}/log/%{name}
 %{_bindir}/%{name}-*
 
+%attr(0644, redis, root) %config(noreplace) %{_sysconfdir}/%{name}.conf
+
 %if 0%{?with_systemd}
-%{_tmpfilesdir}/%{name}.conf
 %{_unitdir}/%{name}.service
 %else
+%dir %attr(0755, redis, redis) %{_localstatedir}/run/%{name}
 %{_initrddir}/%{name}
 %endif
 
 %changelog
-* Fri Sep 26 2014 Renning Bruns <rbruns@ixl.com>
+* Tue Nov 25 2014 Renning Bruns <rbruns@ixl.com>
+- accomodating fedora 14
+* Fri Nov 21 2014 Renning Bruns <rbruns@ixl.com>
 - initial packaging.

@@ -1,15 +1,16 @@
 PKG_NAME := redis
 PKG_VERSION := 3.0.0
-PKG_RELEASE := 2014112102
+PKG_RELEASE := 2014112501
 PKG_ARCH := x86_64
+DIST := 20
 
 # this should be changed to your artifactory user name from the
 # command line:
 #     make ART_AUTH=myuser:password upload
 ART_AUTH := myuser:password
-ART_URL := http://ares:8081/artifactory/ixl-yum-local/fedora/20/testing/$(PKG_ARCH)/
+ART_URL := http://ares:8081/artifactory/ixl-yum-local/fedora/$(DIST)/testing/$(PKG_ARCH)/
 
-RPM := RPMS/$(PKG_ARCH)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).$(PKG_ARCH).rpm
+RPM := RPMS/$(PKG_ARCH)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE).fc$(DIST).$(PKG_ARCH).rpm
 
 all: clean build
 
