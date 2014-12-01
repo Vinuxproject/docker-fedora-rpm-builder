@@ -6,4 +6,4 @@ RUN yum update -y
 RUN yum install -y @development-tools fedora-packager
 
 WORKDIR /tmp/rpm
-CMD ["make"]
+CMD ["make","DIST=17"]
